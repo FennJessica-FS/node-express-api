@@ -14,6 +14,17 @@ let users = [
   { id: 2, name: "Alex Trebek" },
 ];
 
+// helper to make sure the id in the URL is a real positive number
+function getValidId(idParam) {
+  const id = Number(idParam);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return null;
+  }
+
+  return id;
+}
+
 // GET all users
 app.get("/users", (req, res) => {
   res.status(200).json(users);
@@ -21,7 +32,12 @@ app.get("/users", (req, res) => {
 
 // GET one user by id
 app.get("/users/:id", (req, res) => {
-  const id = Number(req.params.id);
+  const id = getValidId(req.params.id);
+
+  if (!id) {
+    return res.status(400).json({ message: "ID must be a positive number" });
+  }
+
   const user = users.find((u) => u.id === id);
 
   if (!user) {
@@ -33,15 +49,15 @@ app.get("/users/:id", (req, res) => {
 
 // POST create a new user
 app.post("/users", (req, res) => {
-  const { name } = req.body;
+  const name = req.body.name;
 
-  if (!name) {
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
     return res.status(400).json({ message: "Name is required" });
   }
 
   const newId = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
 
-  const newUser = { id: newId, name };
+  const newUser = { id: newId, name: name.trim() };
   users.push(newUser);
 
   res.status(201).json({ message: "User created", user: newUser });
@@ -49,10 +65,15 @@ app.post("/users", (req, res) => {
 
 // PUT update a user by id
 app.put("/users/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const { name } = req.body;
+  const id = getValidId(req.params.id);
 
-  if (!name) {
+  if (!id) {
+    return res.status(400).json({ message: "ID must be a positive number" });
+  }
+
+  const name = req.body.name;
+
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
     return res.status(400).json({ message: "Name is required" });
   }
 
@@ -62,14 +83,19 @@ app.put("/users/:id", (req, res) => {
     return res.status(404).json({ message: "User not found", id });
   }
 
-  user.name = name;
+  user.name = name.trim();
 
   res.status(200).json({ message: "User updated", user });
 });
 
-// DELETE a user by id /
+// DELETE a user by id
 app.delete("/users/:id", (req, res) => {
-  const id = Number(req.params.id);
+  const id = getValidId(req.params.id);
+
+  if (!id) {
+    return res.status(400).json({ message: "ID must be a positive number" });
+  }
+
   const index = users.findIndex((u) => u.id === id);
 
   if (index === -1) {
@@ -81,7 +107,12 @@ app.delete("/users/:id", (req, res) => {
   res.status(200).json({ message: "User deleted", user: deletedUser });
 });
 
-// use PORT if it's set, otherwise default to 3000
+// catch all for bad routes (helps with error handling points)
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// use PORT if it's set, otherwise go ahead and default to 3000
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
