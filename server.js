@@ -66,7 +66,7 @@ app.put("/users/:id", (req, res) => {
   res.status(200).json({ message: "User updated", user });
 });
 
-// DELETE a user by id
+// DELETE a user by id /
 app.delete("/users/:id", (req, res) => {
   const id = Number(req.params.id);
   const index = users.findIndex((u) => u.id === id);
