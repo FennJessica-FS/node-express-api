@@ -107,7 +107,7 @@ app.delete("/users/:id", (req, res) => {
   res.status(200).json({ message: "User deleted", user: deletedUser });
 });
 
-// catch all for bad routes (helps with error handling points)
+// catch all for bad routes (404 error handling)
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
