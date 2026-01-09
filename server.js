@@ -39,7 +39,8 @@ app.post("/users", (req, res) => {
     return res.status(400).json({ message: "Name is required" });
   }
 
-  const newId = users.length ? users[users.length - 1].id + 1 : 1;
+  const newId = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
+
   const newUser = { id: newId, name };
   users.push(newUser);
 
